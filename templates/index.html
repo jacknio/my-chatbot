@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DeepSeek 问答系统</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .chat-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .user-msg {
+            color: #2c3e50;
+            margin: 10px 0;
+            padding: 8px;
+            background: #f0f4f8;
+            border-radius: 4px;
+        }
+        .ai-msg {
+            color: #34495e;
+            margin: 10px 0;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .loading {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-box">
+        <h1>jack测试</h1>
+        <div id="history"></div>
+        <textarea id="question" placeholder="请输入您的问题..." rows="4"></textarea>
+        <button onclick="ask()">发送问题</button>
+    </div>
+
+    <script>
+        async function ask() {
+            const question = document.getElementById('question').value.trim();
+            if (!question) return;
+
+            const history = document.getElementById('history');
+            history.innerHTML += `<div class="user-msg">您：${question}</div>`;
+            history.innerHTML += `<div class="loading">AI 正在思考中...</div>`;
+            
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+                if (data.error) throw data.error;
+                
+                history.lastElementChild.remove();  // 移除 loading 提示
+                history.innerHTML += `<div class="ai-msg">${data.answer}</div>`;
+            } catch (error) {
+                history.lastElementChild.remove();
+                history.innerHTML += `<div class="error">错误：${error.detail || error}</div>`;
+            }
+            
+            document.getElementById('question').value = '';
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    </script>
+</body>
+</html>
